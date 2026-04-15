@@ -1,0 +1,43 @@
+[project]
+name = "pm-savefile-converter"
+version = "0.0.1"
+description = "Convert PenguinMod and Scratch save files into a git-compatible format"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.12"
+license = { text = "GPL-3.0-or-later" }
+authors = [{name = "GermanCodeEngineer", email = "germancodeengineer@proton.me"}]
+
+# sometimes auto generated
+dependencies = [
+    "pmp_manip>=1.2.2",
+]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/GermanCodeEngineer/pm-savefile-converter/"
+Repository = "https://github.com/GermanCodeEngineer/pm-savefile-converter/"
+Issues = "https://github.com/GermanCodeEngineer/pm-savefile-converter/issues/"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pmp_manip*"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.poetry.extras]
+nodejs = ["Node.js >= 18"]  # informational only
+
+# TODO: Add build workflow with npm install and stuff
