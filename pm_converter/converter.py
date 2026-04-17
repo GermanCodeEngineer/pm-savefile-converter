@@ -99,6 +99,37 @@ def unpack_project(source_file: Path, output_dir: Path) -> None:
             srsound = frsound.to_second(frproject.asset_files)
             export_sound(target, frsound, srsound, output_dir)
 
+
+def pack_project(input_dir: Path, output_file: Path) -> None:
+    configure()
+
+    input_dir.
+
+
+    frproject = p.FRProject.from_file(str(output_file))
+    project_json = as_json(frproject)
+    del project_json["asset_files"]
+
+    shutil.rmtree(intput_dir, ignore_errors=True)
+    intput_dir.mkdir(parents=True, exist_ok=True)
+    (intput_dir / "project.json").write_text(
+        json.dumps(project_json, indent=4)
+    )
+
+    for target in frproject.targets:
+        for frcostume in target.costumes:
+            srcostume = frcostume.to_second(frproject.asset_files)
+            if isinstance(srcostume, p.SRVectorCostume):
+                export_vector_costume(target, frcostume, srcostume, intput_dir)
+
+            elif isinstance(srcostume, p.SRBitmapCostumex):
+                export_bitmap_costume(target, frcostume, srcostume, intput_dir)
+
+        for frsound in target.sounds:
+            srsound = frsound.to_second(frproject.asset_files)
+            export_sound(target, frsound, srsound, intput_dir)
+
+
 def main() -> None:
     import argparse
     parser = argparse.ArgumentParser(description="Convert PM save files to a better format.")
