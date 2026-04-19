@@ -73,16 +73,16 @@ def export_sound(target: p.FRTarget, frsound: p.FRSound, srsound: p.SRSound, out
     file_path = output_dir / f"{target.name}-{frsound.name}-{frsound.asset_id}.wav"
     audio_content.export(str(file_path), format="wav")
 
-def unpack_project(source_file: Path, output_dir: Path) -> None:
+def unpack_project(packed_file: Path, unpacked_dir: Path) -> None:
     configure()
 
-    frproject = p.FRProject.from_file(str(source_file))
+    frproject = p.FRProject.from_file(str(packed_file))
     project_json = as_json(frproject)
     del project_json["asset_files"]
 
-    shutil.rmtree(output_dir, ignore_errors=True)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / "project.json").write_text(
+    shutil.rmtree(unpacked_dir, ignore_errors=True)
+    unpacked_dir.mkdir(parents=True, exist_ok=True)
+    (unpacked_dir / "project.json").write_text(
         json.dumps(project_json, indent=4)
     )
 
@@ -90,54 +90,43 @@ def unpack_project(source_file: Path, output_dir: Path) -> None:
         for frcostume in target.costumes:
             srcostume = frcostume.to_second(frproject.asset_files)
             if isinstance(srcostume, p.SRVectorCostume):
-                export_vector_costume(target, frcostume, srcostume, output_dir)
+                export_vector_costume(target, frcostume, srcostume, unpacked_dir)
 
             elif isinstance(srcostume, p.SRBitmapCostumex):
-                export_bitmap_costume(target, frcostume, srcostume, output_dir)
+                export_bitmap_costume(target, frcostume, srcostume, unpacked_dir)
 
         for frsound in target.sounds:
             srsound = frsound.to_second(frproject.asset_files)
-            export_sound(target, frsound, srsound, output_dir)
+            export_sound(target, frsound, srsound, unpacked_dir)
 
 
-def pack_project(input_dir: Path, output_file: Path) -> None:
+def pack_project(packed_file: Path, unpacked_dir: Path) -> None:
     configure()
+    project_json = json.loads((unpacked_dir / "project.json").read_text())
+    for sub_file in unpacked_dir.iterdir():
+        if sub_file.name == "project.json":
+            continue
+        if sub_file.is_file():
+            target_name, asset_name, asset_id = sub_file.name.split("-")
+            file_extension = sub_file.name.split(".")[-1]
 
-    input_dir.
+            # HERE: handle sounds and costumes
 
-
-    frproject = p.FRProject.from_file(str(output_file))
-    project_json = as_json(frproject)
-    del project_json["asset_files"]
-
-    shutil.rmtree(intput_dir, ignore_errors=True)
-    intput_dir.mkdir(parents=True, exist_ok=True)
-    (intput_dir / "project.json").write_text(
-        json.dumps(project_json, indent=4)
-    )
-
-    for target in frproject.targets:
-        for frcostume in target.costumes:
-            srcostume = frcostume.to_second(frproject.asset_files)
-            if isinstance(srcostume, p.SRVectorCostume):
-                export_vector_costume(target, frcostume, srcostume, intput_dir)
-
-            elif isinstance(srcostume, p.SRBitmapCostumex):
-                export_bitmap_costume(target, frcostume, srcostume, intput_dir)
-
-        for frsound in target.sounds:
-            srsound = frsound.to_second(frproject.asset_files)
-            export_sound(target, frsound, srsound, intput_dir)
+            with sub_file.open("rb") as f:
+                asset_content = f.read()
+            p.AssetFile(asset_id=asset_id, content=asset_content)
+    frproject = p.FRProject.from_data(project_json, asset_files)
 
 
 def main() -> None:
     import argparse
     parser = argparse.ArgumentParser(description="Convert PM save files to a better format.")
-    parser.add_argument("source_file", help="Path to the source save file")
-    parser.add_argument("output_dir", help="Path to the output directory")
+    parser.add_argument("packed_file", help="Path to the packed PM file")
+    parser.add_argument("unpacked_dir", help="Path to the unpacked directory")
     args = parser.parse_args()
 
-    unpack_project(Path(args.source_file), Path(args.output_dir))
+    #unpack_project(Path(args.packed_file), Path(args.unpacked_dir))
+    pack_project(Path(args.packed_file), Path(args.unpacked_dir))
 
 
 if __name__ == "__main__":
